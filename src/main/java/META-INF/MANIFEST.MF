@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Class-Path: commons-lang-2.6.jar spring-aop-3.1.2.RELEASE.jar spring-j
+ ms-3.1.2.RELEASE.jar javassist-3.12.1.GA.jar spring-context-3.1.2.REL
+ EASE.jar javassist-3.18.1-GA.jar spring-beans-3.1.2.RELEASE.jar commo
+ ns-logging-1.1.1.jar jboss-logging-annotations-1.2.0.Beta1.jar mchang
+ e-commons-java-0.2.3.4.jar dabINI.jar spring-context-support-3.1.2.RE
+ LEASE.jar hibernate-entitymanager-4.3.6.Final.jar spring-orm-3.1.2.RE
+ LEASE.jar persistence-api-1.0.2.jar spring-web-3.1.2.RELEASE.jar prim
+ efaces-3.4.2.jar xml-apis-1.3.02.jar spring-jdbc-3.1.2.RELEASE.jar jb
+ oss-transaction-api_1.2_spec-1.0.0.Final.jar spring-aspects-3.1.2.REL
+ EASE.jar aristo-1.0.1.jar spring-expression-3.1.2.RELEASE.jar jstl-1.
+ 2.jar spring-core-3.1.2.RELEASE.jar spring-asm-3.1.2.RELEASE.jar jsf-
+ impl-2.1.13.jar antlr-2.7.7.jar jsf-api-2.1.13.jar hibernate-c3p0-4.3
+ .6.Final.jar dom4j-1.6.1.jar jboss-logging-3.1.3.GA.jar spring-tx-3.1
+ .2.RELEASE.jar servlet-api-2.5.jar cglib-nodep-2.2.2.jar jandex-1.1.0
+ .Final.jar hibernate-commons-annotations-4.0.5.Final.jar hibernate-co
+ re-4.3.6.Final.jar postgresql-9.0-801.jdbc4.jar c3p0-0.9.2.1.jar aopa
+ lliance-1.0.jar
+Main-Class: 
+

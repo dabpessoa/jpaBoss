@@ -1,0 +1,12 @@
+gitarget
+.settings
+.project
+.metadata
+bin
+.classpath
+test-output
+.tern-project
+build
+.idea
+out
+*.iml
