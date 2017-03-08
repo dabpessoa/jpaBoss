@@ -9,84 +9,140 @@ import org.springframework.web.jsf.FacesContextUtils;
 
 import javax.faces.context.FacesContext;
 import java.io.IOException;
+import java.util.Arrays;
 
-public class SpringUtils {
+public abstract class SpringUtils {
 
-	public static final String contextPath = "classpath:applicationContext.xml";
-	public static final Class<?>[] contextClasses = {SpringConfigDevelopment.class, SpringConfigProduction.class, SpringConfig.class};
+	public static final String contextXMLPath = "classpath:applicationContext.xml";
+
+	// Se não houver nenhuma configuração baseada em annotation deixar esse array vazio.
+	public static final Class<?>[] contextAnnotationClasses = {SpringConfig.class, SpringConfigDevelopment.class, SpringConfigProduction.class};
+
+	public static final SpringContextLoadType DEFAULT_CONTEXT_LOAD_TYPE = SpringContextLoadType.CONFIGURATION_ANNOTATION;
+
+	public enum SpringContextLoadType {CONFIGURATION_ANNOTATION, XML};
 
     private static ApplicationContext context;
 
+	// Construtor "private" para impedir instanciação desta classe mesmo internamente.
 	private SpringUtils() {}
-	
-	@SuppressWarnings("unchecked")
+
 	public static <T> T getBean(String name) {
-		return (T) getContext().getBean(name);
+		return (T) getContext(null).getBean(name);
 	}
 
-	@SuppressWarnings("unchecked")
+	public static <T> T getBeanWithConstructorArgs(String name, String... constructorArgs) {
+		return (T) getContext(null).getBean(name, constructorArgs);
+	}
+
 	public static <T> T getBean(String name, String... activeProfiles) {
-		return (T) getAnnotationConfigContext(activeProfiles).getBean(name);
+		return getConfigurationAnnotationBean(name, activeProfiles);
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> T getBean(Class<?> clazz) { 
-		return (T) getContext().getBean(clazz);
+	public static <T> T getBeanWithConstructorArgs(String name, String[] constructorArgs, String... activeProfiles) {
+		return (T) getContext(SpringContextLoadType.CONFIGURATION_ANNOTATION, activeProfiles).getBean(name, constructorArgs);
+	}
+
+	public static <T> T getBean(Class<?> clazz) {
+		return (T) getContext(null).getBean(clazz);
 	}
 
 	public static <T> T getBean(Class<?> clazz, String... activeProfiles) {
-		return (T) getAnnotationConfigContext(activeProfiles).getBean(clazz);
-	}
-	
-	public static void init(final ApplicationContext contextApp) {
-		context = contextApp;
+		return getConfigurationAnnotationBean(clazz, activeProfiles);
 	}
 
-	public synchronized static ApplicationContext getContext() {
-		if (context == null) {
-			if (FacesContext.getCurrentInstance() != null) {
-				context = FacesContextUtils.getWebApplicationContext(FacesContext.getCurrentInstance());
-			}
-			
-			if (context == null) {
-				context = ApplicationContextProvider.getApplicationContext();
-			}
-			
-			if (context == null) {
-				context = new FileSystemXmlApplicationContext(contextPath);
-			}
+	public static <T> T getXMLBean(String name) {
+		return (T) getContext(SpringContextLoadType.XML).getBean(name);
+	}
 
-			if (context == null) {
-				AnnotationConfigApplicationContext annotationContext = new AnnotationConfigApplicationContext();
-				annotationContext.register(contextClasses);
-//				annotationContext.getEnvironment().setActiveProfiles("development");
-//				System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "dev");
-				context = annotationContext;
+	public static <T> T getXMLBean(Class<?> clazz) {
+		return (T) getContext(SpringContextLoadType.XML).getBean(clazz);
+	}
+
+	public static <T> T getConfigurationAnnotationBean(String name) {
+		return (T) getContext(SpringContextLoadType.CONFIGURATION_ANNOTATION).getBean(name);
+	}
+
+	public static <T> T getConfigurationAnnotationBean(Class<?> clazz) {
+		return (T) getContext(SpringContextLoadType.CONFIGURATION_ANNOTATION).getBean(clazz);
+	}
+
+	public static <T> T getConfigurationAnnotationBean(String name, String... activeProfiles) {
+		return (T) getContext(SpringContextLoadType.CONFIGURATION_ANNOTATION, activeProfiles).getBean(name);
+	}
+
+	public static <T> T getConfigurationAnnotationBean(Class<?> clazz, String... activeProfiles) {
+		return (T) getContext(SpringContextLoadType.CONFIGURATION_ANNOTATION, activeProfiles).getBean(clazz);
+	}
+
+	public static void changeProfiles(String... activeProfiles) {
+		if (context != null) {
+			if (activeProfiles != null && activeProfiles.length != 0) {
+				if (context instanceof AnnotationConfigApplicationContext) {
+					((AnnotationConfigApplicationContext)context).getEnvironment().setActiveProfiles(activeProfiles);
+					((AnnotationConfigApplicationContext) context).refresh();
+				}
 			}
 		}
-		return context;
 	}
 
-	public synchronized static ApplicationContext getAnnotationConfigContext(String... activeProfiles) {
-		if (context == null) {
-			AnnotationConfigApplicationContext annotationContext = new AnnotationConfigApplicationContext();
-			annotationContext.getEnvironment().setActiveProfiles(activeProfiles);
-//			System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "dev");
-			annotationContext.register(contextClasses);
-			annotationContext.refresh();
-			context = annotationContext;
-		}
-		return context;
-	}
-	
 	public static Resource[] findResources(String locationPattern) throws IOException {
 		return new PathMatchingResourcePatternResolver().getResources(locationPattern);
 	}
 
-	public static void main(String[] args) {
-		String string = SpringUtils.getBean("stringDevelopmentTest", "development");
-		System.out.println("Profile: "+string);
+	public static void init(final ApplicationContext contextApp) {
+		context = contextApp;
+	}
 
+	public static String[] getActiveProfiles() {
+		if (context == null) return null;
+		else return context.getEnvironment().getActiveProfiles();
+	}
+
+	private synchronized static ApplicationContext getContext(SpringContextLoadType springContextLoadType, String... activeProfiles) {
+		if (context == null) {
+			if (FacesContext.getCurrentInstance() != null) {
+				context = FacesContextUtils.getWebApplicationContext(FacesContext.getCurrentInstance());
+			}
+
+			if (context == null) {
+				context = ApplicationContextProvider.getApplicationContext();
+			}
+
+			if (context == null) {
+				if (springContextLoadType == null) springContextLoadType = DEFAULT_CONTEXT_LOAD_TYPE;
+				switch (springContextLoadType) {
+					case CONFIGURATION_ANNOTATION: {
+						context = getAnnotationConfigContext(activeProfiles);
+					} break;
+					case XML: {
+						context = new FileSystemXmlApplicationContext(contextXMLPath);
+					} break;
+					default: throw new RuntimeException("Tipo de contexto de carregamento de beans do spring incorreto. Tipo: "+springContextLoadType);
+				}
+			}
+		} else {
+			if (springContextLoadType == SpringContextLoadType.CONFIGURATION_ANNOTATION) {
+				// Se os profiles forem diferentes, deve-se atualizar os profiles.
+				if (activeProfiles != null && activeProfiles.length != 0 && !Arrays.equals(activeProfiles, context.getEnvironment().getActiveProfiles())) {
+					changeProfiles(activeProfiles);
+				}
+			}
+		}
+		return context;
+	}
+
+	private static ApplicationContext getAnnotationConfigContext(String... activeProfiles) {
+		AnnotationConfigApplicationContext annotationContext = new AnnotationConfigApplicationContext();
+		annotationContext.getEnvironment().setActiveProfiles(activeProfiles);
+		annotationContext.register(contextAnnotationClasses);
+		annotationContext.refresh();
+		return annotationContext;
+	}
+
+	public static void main(String[] args) {
+		String string = SpringUtils.getBean("stringTest", "development");
+		System.out.println(string);
 	}
 
 }
