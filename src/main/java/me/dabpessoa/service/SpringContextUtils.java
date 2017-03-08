@@ -11,7 +11,7 @@ import javax.faces.context.FacesContext;
 import java.io.IOException;
 import java.util.Arrays;
 
-public abstract class SpringUtils {
+public abstract class SpringContextUtils {
 
 	public static final String contextXMLPath = "classpath:applicationContext.xml";
 
@@ -25,7 +25,7 @@ public abstract class SpringUtils {
     private static ApplicationContext context;
 
 	// Construtor "private" para impedir instanciação desta classe mesmo internamente.
-	private SpringUtils() {}
+	private SpringContextUtils() {}
 
 	public static <T> T getBean(String name) {
 		return (T) getContext(null).getBean(name);
@@ -141,8 +141,11 @@ public abstract class SpringUtils {
 	}
 
 	public static void main(String[] args) {
-		String string = SpringUtils.getBean("stringTest", "development");
+		String string = SpringContextUtils.getBean("stringTest", "development");
 		System.out.println(string);
+
+		Object o = SpringContextUtils.getBean("entityManager");
+		System.out.println(o);
 	}
 
 }
