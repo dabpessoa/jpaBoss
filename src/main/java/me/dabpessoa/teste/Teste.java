@@ -1,6 +1,5 @@
 package me.dabpessoa.teste;
 
-import me.dabpessoa.jpa.JPAHelper;
 import me.dabpessoa.service.SpringContextUtils;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +15,6 @@ public class Teste {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Resource
-    private JPAHelper hibernateHelper;
 
     public void teste() {
         System.out.println("EntityManager: "+entityManager);
