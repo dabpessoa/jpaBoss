@@ -1,5 +1,6 @@
 package me.dabpessoa.service;
 
+import me.dabpessoa.teste.Teste;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -8,7 +9,10 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.web.jsf.FacesContextUtils;
 
 import javax.faces.context.FacesContext;
+import javax.persistence.EntityManager;
+import javax.sql.DataSource;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 
 public abstract class SpringContextUtils {
@@ -141,11 +145,27 @@ public abstract class SpringContextUtils {
 	}
 
 	public static void main(String[] args) {
-		String string = SpringContextUtils.getBean("stringTest", "development");
-		System.out.println(string);
+//		String string = SpringContextUtils.getBean("stringTest");
+//		System.out.println(string);
 
-		Object o = SpringContextUtils.getBean("entityManager");
-		System.out.println(o);
+//		Object o = SpringContextUtils.getBean("entityManager");
+//		System.out.println(o);
+
+//		EnvironmentManager environmentManager = SpringContextUtils.getBean("environmentManager", EnvironmentManager.EnvironmentSection.DEVELOPMENT.getDescricao());
+//		System.out.println(environmentManager);
+
+//		DataSource dataSource = SpringContextUtils.getBean("dataSource", EnvironmentManager.EnvironmentSection.DEVELOPMENT.getDescricao());
+//		System.out.println(dataSource);
+
+//		Teste testeService = SpringContextUtils.getBean("teste", EnvironmentManager.EnvironmentSection.DEVELOPMENT.getDescricao());
+//		testeService.teste();
+
+		EntityManager em = SpringContextUtils.getBean("entityManager", EnvironmentManager.EnvironmentSection.DEVELOPMENT.getDescricao());
+		System.out.println(em);
+
+		BigInteger result = (BigInteger) em.createNativeQuery("select count(*) from saa.tb_prestacao").getSingleResult();
+		System.out.println(result);
+
 	}
 
 }

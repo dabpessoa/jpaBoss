@@ -29,8 +29,7 @@ public class SpringConfig {
     @Lazy(false)
     @Scope("singleton")
     public EnvironmentManager environmentManager() {
-        EnvironmentManager environmentManager = new EnvironmentManager(EnvironmentManager.ENVIROMENT_PROPERTIES_FILE_PATH);
-        return environmentManager;
+        return new EnvironmentManager();
     }
 
     @Bean
@@ -53,21 +52,6 @@ public class SpringConfig {
         map.put("view", new SpringViewScope());
         customScopeConfigurer.setScopes(map);
         return customScopeConfigurer;
-    }
-
-    @Bean
-    public PersistenceExceptionTranslationPostProcessor persistenceExceptionTranslationPostProcessor() {
-        return new PersistenceExceptionTranslationPostProcessor();
-    }
-
-    @Bean
-    public PersistenceAnnotationBeanPostProcessor persistenceAnnotationBeanPostProcessor() {
-        return new PersistenceAnnotationBeanPostProcessor();
-    }
-
-    @Bean
-    public OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor() {
-        return new OpenEntityManagerInViewInterceptor();
     }
 
     @Bean

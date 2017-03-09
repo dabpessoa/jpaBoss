@@ -1,6 +1,5 @@
 package me.dabpessoa.service;
 
-import org.springframework.stereotype.Service;
 import me.dabpessoa.ini.IniFileManager;
 
 import java.io.IOException;
@@ -11,23 +10,25 @@ import java.util.Properties;
  */
 public class EnvironmentManager {
 
+    public static final String ENVIROMENT_PROPERTIES_FILE_PATH = "environment.ini";
     public static final String PROFILE_DEVELOPMENT_SECTION = "development";
     public static final String PROFILE_PRODUCTION_SECTION = "production";
-    public static final String ENVIROMENT_PROPERTIES_FILE_PATH = "environment.ini";
 
-    public static enum SECTION {
+    public static enum EnvironmentSection {
 
         DEVELOPMENT(PROFILE_DEVELOPMENT_SECTION),
         PRODUCTION(PROFILE_PRODUCTION_SECTION);
 
         private String descricao;
-        private SECTION(String descricao) { this.descricao = descricao; }
+        private EnvironmentSection(String descricao) { this.descricao = descricao; }
         public String getDescricao() { return descricao; }
     }
 
     private IniFileManager iniFile;
 
-    public EnvironmentManager() {}
+    public EnvironmentManager() {
+        this(ENVIROMENT_PROPERTIES_FILE_PATH);
+    }
 
     public EnvironmentManager(String environmentFilePath) {
         iniFile = new IniFileManager(environmentFilePath);
@@ -41,7 +42,7 @@ public class EnvironmentManager {
         return iniFile.getValue(key);
     }
 
-    public String getEnvironmentProperty(SECTION section, String key) {
+    public String getEnvironmentProperty(EnvironmentSection section, String key) {
         return iniFile.getValue(section.getDescricao(), key);
     }
 
@@ -53,7 +54,7 @@ public class EnvironmentManager {
         return createProperties(null, keys);
     }
 
-    public Properties createProperties(SECTION section, String... keys) {
+    public Properties createProperties(EnvironmentSection section, String... keys) {
         Properties props = new Properties();
         if (keys != null && keys.length != 0) {
             for (String key : keys) {
@@ -66,7 +67,7 @@ public class EnvironmentManager {
     public static void main(String[] args) {
         EnvironmentManager em = new EnvironmentManager("env.ini");
         System.out.println(em);
-        System.out.println(em.getEnvironmentProperty(SECTION.DEVELOPMENT, "dataSource.postgres.url"));
+        System.out.println(em.getEnvironmentProperty(EnvironmentSection.DEVELOPMENT, "dataSource.postgres.url"));
     }
 
 }

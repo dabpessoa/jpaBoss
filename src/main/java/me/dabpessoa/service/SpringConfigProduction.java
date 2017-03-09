@@ -1,15 +1,15 @@
 package me.dabpessoa.service;
 
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
+import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -31,17 +31,12 @@ public class SpringConfigProduction {
     private EnvironmentManager environmentManager;
 
     @Bean
-    public String stringTest() {
-        return "ambiente de production";
-    }
-
-    @Bean
     public DriverManagerDataSource dataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(environmentManager.getEnvironmentProperty(EnvironmentManager.SECTION.PRODUCTION, "dataSource.postgres.driverClass"));
-        dataSource.setUrl(environmentManager.getEnvironmentProperty(EnvironmentManager.SECTION.PRODUCTION, "dataSource.postgres.url"));
-        dataSource.setUsername(environmentManager.getEnvironmentProperty(EnvironmentManager.SECTION.PRODUCTION, "dataSource.postgres.username"));
-        dataSource.setPassword(environmentManager.getEnvironmentProperty(EnvironmentManager.SECTION.PRODUCTION, "dataSource.postgres.password"));
+        dataSource.setDriverClassName(environmentManager.getEnvironmentProperty(EnvironmentManager.EnvironmentSection.PRODUCTION, "dataSource.postgres.driverClass"));
+        dataSource.setUrl(environmentManager.getEnvironmentProperty(EnvironmentManager.EnvironmentSection.PRODUCTION, "dataSource.postgres.url"));
+        dataSource.setUsername(environmentManager.getEnvironmentProperty(EnvironmentManager.EnvironmentSection.PRODUCTION, "dataSource.postgres.username"));
+        dataSource.setPassword(environmentManager.getEnvironmentProperty(EnvironmentManager.EnvironmentSection.PRODUCTION, "dataSource.postgres.password"));
         return dataSource;
     }
 
@@ -76,6 +71,21 @@ public class SpringConfigProduction {
         SharedEntityManagerBean sharedEntityManagerBean = new SharedEntityManagerBean();
         sharedEntityManagerBean.setEntityManagerFactory(entityManagerFactory);
         return sharedEntityManagerBean;
+    }
+
+    @Bean
+    public PersistenceExceptionTranslationPostProcessor persistenceExceptionTranslationPostProcessor() {
+        return new PersistenceExceptionTranslationPostProcessor();
+    }
+
+    @Bean
+    public OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor() {
+        return new OpenEntityManagerInViewInterceptor();
+    }
+
+    @Bean
+    public String stringTest() {
+        return "ambiente de production";
     }
 
 }
