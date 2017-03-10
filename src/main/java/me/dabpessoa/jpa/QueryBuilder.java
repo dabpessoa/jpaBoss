@@ -145,9 +145,9 @@ public class QueryBuilder {
             StringBuilder stringListValuesBuilder = new StringBuilder();
             for (int i = 0 ; i < values.size() ; i++) {
                 if (i+1 == values.size()) stringListValuesBuilder.append(values.get(i));
-                else stringListValuesBuilder.append(values.get(i)+",");
+                else stringListValuesBuilder.append(values.get(i)+SQLCommands.PARAMS_SEPARATOR.sintaxe());
             }
-            String value = "("+stringListValuesBuilder.toString()+")";
+            String value = SQLCommands.PARANTESES_LEFT.sintaxe()+stringListValuesBuilder.toString()+SQLCommands.PARANTESES_RIGHT.sintaxe();
             queryBuilder = appendWhere(name, value, ComparableType.IN, WhereType.AND);
         }
         return queryBuilder;
@@ -181,9 +181,9 @@ public class QueryBuilder {
         if (condition) {
             String where = null;
             if (query.getWheres() != null && !query.getWheres().isEmpty()) {
-                where = whereType.getSymbol()+" ";
+                where = whereType.getSymbol()+SQLCommands.WHITESPACE.sintaxe();
             }
-            where += (name+" "+comparableType.getSymbol()+" "+value);
+            where += (name+SQLCommands.WHITESPACE.sintaxe()+comparableType.getSymbol()+SQLCommands.WHITESPACE.sintaxe()+value);
             where(where);
         }
         return this;
@@ -192,21 +192,21 @@ public class QueryBuilder {
     public String build() {
         StringBuilder stringBuilder = new StringBuilder();
 
-        if (!query.getSelects().isEmpty()) stringBuilder.append("select ");
+        if (!query.getSelects().isEmpty()) stringBuilder.append(SQLCommands.SELECT.sintaxe()+SQLCommands.WHITESPACE.sintaxe());
         for(int i = 0 ; i < query.getSelects().size() ; i++) {
-            if (i + 1 == query.getSelects().size()) stringBuilder.append(query.getSelects().get(i)+" ");
-            else stringBuilder.append(query.getSelects().get(i)+", ");
+            if (i + 1 == query.getSelects().size()) stringBuilder.append(query.getSelects().get(i)+SQLCommands.WHITESPACE.sintaxe());
+            else stringBuilder.append(query.getSelects().get(i)+SQLCommands.PARAMS_SEPARATOR.sintaxe()+SQLCommands.WHITESPACE.sintaxe());
         }
 
-        stringBuilder.append("from ");
+        stringBuilder.append(SQLCommands.FROM.sintaxe()+" ");
         for (int i = 0 ; i < query.getFroms().size() ; i++) {
-            if (i + 1 == query.getFroms().size()) stringBuilder.append(query.getFroms().get(i)+" ");
-            else stringBuilder.append(query.getFroms().get(i)+", ");
+            if (i + 1 == query.getFroms().size()) stringBuilder.append(query.getFroms().get(i)+SQLCommands.WHITESPACE.sintaxe());
+            else stringBuilder.append(query.getFroms().get(i)+SQLCommands.PARAMS_SEPARATOR.sintaxe()+SQLCommands.WHITESPACE.sintaxe());
         }
 
-        if (!query.getWheres().isEmpty()) stringBuilder.append("where ");
+        if (!query.getWheres().isEmpty()) stringBuilder.append(SQLCommands.WHERE.sintaxe()+SQLCommands.WHITESPACE.sintaxe());
         for (int i = 0 ; i < query.getWheres().size() ; i++) {
-            stringBuilder.append(query.getWheres().get(i)+" ");
+            stringBuilder.append(query.getWheres().get(i)+SQLCommands.WHITESPACE.sintaxe());
         }
 
         return stringBuilder.toString();
