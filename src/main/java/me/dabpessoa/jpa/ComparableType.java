@@ -1,7 +1,9 @@
 package me.dabpessoa.jpa;
 
 public enum ComparableType {
+
         EQUALS("="),
+        IN("in"),
         NOT_EQUALS("<>"),
         LIKE("like"),
         ILIKE("ilike"),

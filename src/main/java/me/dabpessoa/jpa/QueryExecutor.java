@@ -115,76 +115,30 @@ public class QueryExecutor {
                 .order(order);
 
         Iterator<QueryValue> it = queryValues.iterator();
+        Map<String, Object> params = new HashMap<>();
         while (it.hasNext()) {
-//            queryBuilder.appendWhere();
+            QueryValue queryValue = it.next();
+            String entityPropertyName = queryValue.getEntityPropertyName().indexOf(".") == -1 ? entityAlias+"."+queryValue.getEntityPropertyName() : queryValue.getEntityPropertyName();
+            String queryParamName = queryValue.getQueryParamName();
+            if (queryParamName == null) queryParamName = queryValue.getEntityPropertyName();
+
+            params.put(entityPropertyName, ":"+queryParamName);
         }
 
+        String stringQuery = queryBuilder.appendWhereObjects(params, true).build();
 
+        Query q = entityManager.createQuery(stringQuery);
+        for (QueryValue queryValue : queryValues) {
+            String queryParamName = queryValue.getQueryParamName();
+            if (queryParamName == null) queryParamName = queryValue.getEntityPropertyName();
+            Object value = queryValue.getQueryParamValue();
 
+            if (value != null && !value.toString().isEmpty()) {
+                q.setParameter(queryParamName, value);
+            }
+        }
 
-
-
-
-//        entityAlias = entityAlias != null ? entityAlias : "entity";
-//        StringBuffer sb = new StringBuffer("select "+entityAlias+" from "+clazz.getName()+" "+entityAlias+" ");
-//        if (joins != null && !joins.isEmpty()) {
-//            sb.append(" "+joins+" ");
-//        }
-//        sb.append(" where 1=1 ");
-//
-//        List<QueryValue> list = new ArrayList<>();
-//        list.addAll(queryValues);
-//
-//        Iterator<QueryValue> it = list.iterator();
-//        while (it.hasNext()) {
-//            QueryValue queryValue = it.next();
-//            String entityPropertyName = queryValue.getEntityPropertyName().indexOf(".") == -1 ? entityAlias+"."+queryValue.getEntityPropertyName() : queryValue.getEntityPropertyName();
-//            String queryParamName = queryValue.getQueryParamName();
-//            if (queryParamName == null) queryParamName = queryValue.getEntityPropertyName();
-//            Object value = queryValue.getQueryParamValue();
-//
-//            if (value != null && !value.toString().isEmpty()) {
-//
-//                if (!Primitive.isPrimitiveOrWrapper(value) && !(value instanceof String)) {
-//
-//                    Object v = null;
-//                    if (value instanceof List) {
-//                        if (!((List)value).isEmpty()) {
-//                            v = (List)value;
-//                        }
-//                    } else {
-//                        v = ReflectionUtils.findFirstFieldValueByAnnotation(value, Id.class);
-//                    }
-//
-//                    if (v == null) {
-//                        it.remove();
-//                        continue;
-//                    }
-//                }
-//
-//                if (value instanceof String) sb.append(" and lower("+entityPropertyName+") like "+"lower(:"+queryParamName+") ");
-//                else if (value instanceof List) sb.append(" and "+entityPropertyName+" in (:"+queryParamName+") ");
-//                else sb.append(" and "+entityPropertyName+" = :"+queryParamName+" ");
-//
-//            } else it.remove();
-//        }
-//
-//        if (order != null && !order.isEmpty()) {
-//            sb.append(" "+order+" ");
-//        }
-//
-//        Query q = entityManager.createQuery(sb.toString());
-//        for (QueryValue queryValue : list) {
-//            String queryParamName = queryValue.getQueryParamName();
-//            if (queryParamName == null) queryParamName = queryValue.getEntityPropertyName();
-//            Object value = queryValue.getQueryParamValue();
-//            if (value instanceof String) q.setParameter(queryParamName, "%"+value.toString()+"%");
-//            else q.setParameter(queryParamName, value);
-//        }
-//        return q.getResultList();
-
-        return null;
-
+        return q.getResultList();
     }
 
     class QueryValue {

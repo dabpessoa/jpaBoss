@@ -1,5 +1,14 @@
 package me.dabpessoa.jpa;
 
+import me.dabpessoa.utils.Primitive;
+import me.dabpessoa.utils.ReflectionUtils;
+
+import javax.persistence.Id;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Created by diego.pessoa on 09/03/2017.
  */
@@ -38,6 +47,110 @@ public class QueryBuilder {
     public QueryBuilder where(String where) {
         query.addWhere(where);
         return this;
+    }
+
+    public QueryBuilder appendWhereObjects(Map<String, Object> params) {
+        return appendWhereObjects(params, true);
+    }
+
+    public QueryBuilder appendWhereObjects(Map<String, Object> params, boolean wrapObjectValues) {
+        QueryBuilder queryBuilder = this;
+        if (params != null) {
+            Map<String, String> mapString = new HashMap<>();
+            for (String key : params.keySet()) {
+                String keyAux = key;
+                Object value = params.get(key);
+
+                if (value != null && !value.toString().isEmpty()) {
+
+                    if (!Primitive.isPrimitiveOrWrapper(value) && !(value instanceof String)) {
+
+                        if (value instanceof List) {
+                            if (((List)value).isEmpty()) {
+                                value = null;
+                            }
+                        } else {
+                            value = ReflectionUtils.findFirstFieldValueByAnnotation(value, Id.class);
+                            if (value != null) {
+                                keyAux = key+"."+"id";
+                            }
+                        }
+
+                    }
+
+                    if (value != null) {
+
+                        if (value instanceof List) {
+                            // Criar lista de strings a partir da lista de objetos.
+
+                            List<String> stringValues = new ArrayList<>();
+                            List<Object> list = ((List)value);
+
+                            for (Object objectListValue : list) {
+                                Class<?> genericClass = objectListValue.getClass();
+                                if (genericClass != null && genericClass.equals(String.class)) {
+                                    if (wrapObjectValues) {
+                                        //objectListValue = wrap(objectListValue);
+                                    }
+                                    stringValues.add(objectListValue.toString());
+                                } else {
+                                    if (Primitive.isPrimitiveOrWrapper(objectListValue)) {
+                                        stringValues.add(objectListValue.toString());
+                                    } else {
+                                        Object idValue = ReflectionUtils.findFirstFieldValueByAnnotation(objectListValue, Id.class);
+                                        stringValues.add(idValue.toString());
+                                    }
+                                }
+                            }
+
+                            value = stringValues;
+                        }
+
+                        if (wrapObjectValues && !(value instanceof List)) {
+                            // value = wrap(value);
+                        }
+
+                        if (value instanceof List) {
+                            queryBuilder = appendWhere(keyAux, (List<String>)value);
+                        } else {
+                            queryBuilder = appendWhere(keyAux, value.toString());
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+
+        return queryBuilder;
+    }
+
+    public QueryBuilder appendWhere(Map<String, String> params) {
+        QueryBuilder queryBuilder = this;
+        if (params != null)  {
+            for (String key : params.keySet()) {
+                String value = params.get(key);
+                if (value != null && !value.isEmpty()) {
+                    queryBuilder = appendWhere(key, params.get(key));
+                }
+            }
+        }
+        return queryBuilder;
+    }
+
+    public QueryBuilder appendWhere(String name, List<String> values) {
+        QueryBuilder queryBuilder = this;
+        if (values != null && !values.isEmpty()) {
+            StringBuilder stringListValuesBuilder = new StringBuilder();
+            for (int i = 0 ; i < values.size() ; i++) {
+                if (i+1 == values.size()) stringListValuesBuilder.append(values.get(i));
+                else stringListValuesBuilder.append(values.get(i)+",");
+            }
+            String value = "("+stringListValuesBuilder.toString()+")";
+            queryBuilder = appendWhere(name, value, ComparableType.IN, WhereType.AND);
+        }
+        return queryBuilder;
     }
 
     public QueryBuilder appendWhere(String name, String value) {
