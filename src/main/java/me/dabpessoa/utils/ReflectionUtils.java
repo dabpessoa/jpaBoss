@@ -53,6 +53,13 @@ public class ReflectionUtils {
 			return values;
 		} return null;
 	}
+
+	public static Object findFieldValue(Object entity, String fieldName) {
+		Field field = findFieldByName(entity.getClass(), fieldName);
+		if (field != null) {
+			return findFieldValue(entity, field);
+		} return null;
+	}
 	
 	public static Object findFieldValue(Object entity, Field field) {
 		try {

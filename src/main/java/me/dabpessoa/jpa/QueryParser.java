@@ -13,7 +13,12 @@ import java.util.*;
  */
 public class QueryParser {
 
-    public Map<String, String> parseToSQLParams(Map<String, Object> params, boolean wrapValues, boolean removeNulls) {
+    public Map<String, String> parseToSQLParams(Map<String, Object> params, boolean wrapValues, boolean removeNulls, boolean deepObjectSearch) {
+
+        if (deepObjectSearch) {
+
+        }
+
 
         if (removeNulls) {
             params = removeNullValues(params);
@@ -74,6 +79,66 @@ public class QueryParser {
                 wrapedObject = object;
             }
         } return wrapedObject != null ? wrapedObject.toString() : null;
+    }
+
+    // TODO FIXME cosertar esse método.
+    public Object deepObjectSearchValue(String key, Object objectValue) {
+
+        // Verifica se é um objeto diferente de primitivos, wrappers e string.
+        if (!Primitive.isPrimitiveOrWrapper(objectValue) && !(objectValue instanceof String)) {
+
+            int dotIndex = key.indexOf(".");
+
+            String property;
+            if (dotIndex != -1) property = key.substring(0, dotIndex);
+            else property = key;
+
+            Object newObjectValue = ReflectionUtils.findFieldValue(objectValue, property);
+
+            String newKey;
+            if (property != key) newKey = key.substring(dotIndex);
+            else newKey = key;
+
+            deepObjectSearchValue(newKey, newObjectValue);
+
+        }
+
+        return objectValue;
+
+    }
+
+    public static void main(String[] args) {
+
+        String teste = "string teste...";
+        Pessoa pessoa = new QueryParser().new Pessoa();
+        pessoa.setNome("diego");
+        pessoa.setCpf("123456");
+
+        QueryParser qp = new QueryParser();
+        Object value = qp.deepObjectSearchValue("nome", pessoa);
+        System.out.println(value);
+
+    }
+
+    class Pessoa {
+        private String nome;
+        private String cpf;
+
+        public String getNome() {
+            return nome;
+        }
+
+        public void setNome(String nome) {
+            this.nome = nome;
+        }
+
+        public String getCpf() {
+            return cpf;
+        }
+
+        public void setCpf(String cpf) {
+            this.cpf = cpf;
+        }
     }
 
 }
