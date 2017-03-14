@@ -107,11 +107,6 @@ public class QueryExecutor {
         return queryList(clazz, queryValues, null, joins, null);
     }
 
-    /*
-    TODO FIXME criar uma forma de otimizar o mapa de valores (queryvalues) para que sejam retirados os valores nulos.
-        isto já está implementado na classe QueryBuilder, mas deve-se externalizar o método e ajustar o código.
-     */
-
     public <T> List<T> queryList(Class<T> clazz, List<QueryValue> queryValues, String entityAlias, String joins, String order) {
         QueryBuilder queryBuilder = me.dabpessoa.jpa.Query.create()
                 .select(entityAlias)

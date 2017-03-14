@@ -16,16 +16,31 @@ public class QueryParser {
     public Map<String, String> parseToSQLParams(Map<String, Object> params, boolean wrapValues, boolean removeNulls, boolean deepObjectSearch) {
 
         if (deepObjectSearch) {
-
+            for (String key : params.keySet()) {
+                Object value = params.get(key);
+                if (key.contains(".")) {
+                    params.put(key, deepObjectSearchValue(key, value));
+                }
+            }
         }
-
 
         if (removeNulls) {
             params = removeNullValues(params);
         }
 
-        //TODO FIXME
-        return null;
+        Map<String, String> stringParams = null;
+        if (wrapValues) {
+            stringParams = SQLWrap(params);
+        } else {
+
+            for (String key : params.keySet()) {
+                Object value = params.get(key);
+                stringParams.put(key, value != null ? value.toString() : null);
+            }
+
+        }
+
+        return stringParams;
     }
 
     public Map<String, Object> removeNullValues(Map<String, Object> params) {
@@ -81,12 +96,11 @@ public class QueryParser {
         } return wrapedObject != null ? wrapedObject.toString() : null;
     }
 
-    // TODO FIXME cosertar esse método.
     public Object deepObjectSearchValue(String key, Object objectValue) {
 
-        // Verifica se é um objeto diferente de primitivos, wrappers e string.
-        if (!Primitive.isPrimitiveOrWrapper(objectValue) && !(objectValue instanceof String)) {
+        if (objectValue == null) return null;
 
+        if (!Primitive.isPrimitiveOrWrapper(objectValue) && !(objectValue instanceof String)) {
             int dotIndex = key.indexOf(".");
 
             String property;
@@ -96,49 +110,17 @@ public class QueryParser {
             Object newObjectValue = ReflectionUtils.findFieldValue(objectValue, property);
 
             String newKey;
-            if (property != key) newKey = key.substring(dotIndex);
-            else newKey = key;
+            if (property != key) {
+                newKey = key.substring(dotIndex+1);
+            } else {
+                return newObjectValue;
+            }
 
-            deepObjectSearchValue(newKey, newObjectValue);
-
+            return deepObjectSearchValue(newKey, newObjectValue);
         }
 
-        return objectValue;
+        return null;
 
-    }
-
-    public static void main(String[] args) {
-
-        String teste = "string teste...";
-        Pessoa pessoa = new QueryParser().new Pessoa();
-        pessoa.setNome("diego");
-        pessoa.setCpf("123456");
-
-        QueryParser qp = new QueryParser();
-        Object value = qp.deepObjectSearchValue("nome", pessoa);
-        System.out.println(value);
-
-    }
-
-    class Pessoa {
-        private String nome;
-        private String cpf;
-
-        public String getNome() {
-            return nome;
-        }
-
-        public void setNome(String nome) {
-            this.nome = nome;
-        }
-
-        public String getCpf() {
-            return cpf;
-        }
-
-        public void setCpf(String cpf) {
-            this.cpf = cpf;
-        }
     }
 
 }
