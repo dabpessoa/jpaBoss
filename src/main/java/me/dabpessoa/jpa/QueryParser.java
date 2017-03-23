@@ -2,11 +2,15 @@ package me.dabpessoa.jpa;
 
 import me.dabpessoa.utils.Primitive;
 import me.dabpessoa.utils.ReflectionUtils;
-import org.apache.taglibs.standard.tag.common.core.ParamSupport;
 
-import javax.persistence.Id;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.util.*;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by diego.pessoa on 10/03/2017.
@@ -120,6 +124,48 @@ public class QueryParser {
         }
 
         return null;
+
+    }
+
+    public Object basicFieldTypeTransform(Object value, Field field) {
+
+        Type fieldType = field.getType();
+        String fieldName = field.getName();
+
+        if (value != null) {
+
+            try {
+
+                String myValue = value.toString();
+                myValue = myValue.trim();
+
+                if (Integer.class.equals(fieldType)) {
+                    value = new Double(myValue).intValue();
+                } else if (String.class.equals(fieldType)) {
+                    value = myValue;
+                } else if (BigDecimal.class.equals(fieldType)) {
+                    value = new BigDecimal(myValue);
+                } else if (Long.class.equals(fieldType)) {
+                    value = Long.parseLong(myValue);
+                } else if (Byte.class.equals(fieldType)) {
+                    value = Byte.parseByte(myValue);
+                } else if (Short.class.equals(fieldType)) {
+                    value = Short.parseShort(myValue);
+                } else if (Double.class.equals(fieldType)) {
+                    value = Double.parseDouble(myValue);
+                } else if (Float.class.equals(fieldType)) {
+                    value = Float.parseFloat(myValue);
+                } else if (BigInteger.class.equals(fieldType)) {
+                    value = new BigInteger(myValue);
+                }
+
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Não foi possível setar o valor: "+value+", no campo: "+fieldName+", do tipo: "+fieldType+", da classe: "+field.getDeclaringClass()+". Erro de conversão de tipo.", e);
+            }
+
+        }
+
+        return value;
 
     }
 
